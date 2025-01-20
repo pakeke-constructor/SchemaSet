@@ -28,9 +28,12 @@ Just use a regular sparse-set implementation
 # API
 
 ```lua
+local API = require("SchemaSet")
+
 
 local schema = API.newSchema({
-    "zero", "elem2", ..., "elem_3"
+    "zero", "elem2", "elem_3"
+    -- ^^^ list of possible elems
 })
 
 

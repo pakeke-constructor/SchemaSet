@@ -57,7 +57,8 @@ end
 ---@class SchemaSet.Set
 ---@field bitVec integer[]
 ---@field schema SchemaSet.Schema
----@field elements any[]
+---@field cachedKey string
+---@field cachedElements any[]
 local Set = {}
 local Set_mt = {__index=Set}
 
@@ -104,6 +105,34 @@ end
 
 
 
+---@param bitVec integer[]
+---@return string
+local function makeKey(bitVec)
+    return table.concat(bitVec, "-")
+end
+
+
+
+---@param schema SchemaSet.Schema
+---@param bitVec integer[]
+---@return SchemaSet.Set
+local function newSetFromBitVec(schema, bitVec)
+    local key = makeKey(bitVec)
+    if schema.cachedSets[key] then
+       return schema.cachedSets[key]
+    end
+
+    local scSet = setmetatable({
+        bitVec = bitVec,
+        cachedKey = key,
+
+        -- lazy-eval for getElements
+        cachedElements = false
+    }, Set_mt)
+    return scSet
+end
+
+
 ---@param elements any[]
 ---@return SchemaSet.Set
 function Schema:newSet(elements)
@@ -127,10 +156,26 @@ function Schema:newSet(elements)
         setBit(scSet, i, true)
     end
 
+    local key = scSet:getKey()
+    self.cachedSets[key] = scSet
+
     return scSet
 end
 
 
+
+---@return string
+function Set:getKey()
+    if self.cachedKey then
+        return self.cachedKey
+    end
+    self.cachedKey = makeKey(self.bitVec)
+    return self.cachedKey
+end
+
+
+---@param otherSet SchemaSet.Set
+---@return boolean
 function Set:isSubsetOf(otherSet)
     local otherBitVec = otherSet.bitVec
     for i, n in ipairs(self.bitVec) do
@@ -144,6 +189,8 @@ end
 
 
 
+---@param otherSet SchemaSet.Set
+---@return boolean
 function Set:equals(otherSet)
     local otherBitVec = otherSet.bitVec
     for i, n in ipairs(self.bitVec) do
@@ -153,6 +200,44 @@ function Set:equals(otherSet)
         end
     end
     return true
+end
+
+
+---@param otherSet SchemaSet.Set
+---@return SchemaSet.Set
+function Set:logicalAnd(otherSet)
+    local newBitVec = {}
+    local otherBitVec = otherSet.bitVec
+    for i, n in ipairs(self.bitVec) do
+        local n2 = otherBitVec[i]
+        local newNum = bit.band(n,n2)
+        newBitVec[i] = newNum
+    end
+    return newSetFromBitVec(self.schema, newBitVec)
+end
+
+
+
+---@param otherSet SchemaSet.Set
+---@return SchemaSet.Set
+function Set:logicalOr(otherSet)
+    local newBitVec = {}
+    local otherBitVec = otherSet.bitVec
+    for i, n in ipairs(self.bitVec) do
+        local n2 = otherBitVec[i]
+        local newNum = bit.bor(n,n2)
+        newBitVec[i] = newNum
+    end
+    return newSetFromBitVec(self.schema, newBitVec)
+end
+
+
+---@return any[]
+function Set:getElements()
+    if self.cachedElements then
+        return self.cachedElements
+    end
+    self.cachedElements = error("TODO; implement")
 end
 
 
