@@ -31,16 +31,16 @@ local sc_ERR = schema:newSet({
 
 scSet0:logicalAnd(scSet1) --> scSet{ "zero" }
 scSet0:logicalOr(scSet1) --> scSet{ "zero", "elem2" }
--- ^^^ warning: these operations aren't particularly efficient.
 
 scSet0:isSubsetOf(scSet1) --> scSet{ "zero" }
--- ^^^ this operation is VERY efficient, however.
--- If you need to
+scSet0:equals(scSet1) --> bool
+-- ^^^ These operations are VERY efficient, however.
+
 
 scSet0:getKey() --> "SKD9349EJRFKJRF4985FHDF"
--- a unique string-key that represents the elements of the set (useful for caching)
-
+-- a unique string-key that represents the set (useful for caching)
 scSet0:getElements() -- {"zero", ... }  list of elements for this set
+-- WARNING: expensive operation, if the Set wasn't created normally
 
 
 ```

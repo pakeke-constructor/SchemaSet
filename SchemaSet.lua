@@ -109,8 +109,11 @@ end
 function Schema:newSet(elements)
     ---@type SchemaSet.Set
     local scSet = setmetatable({
-        elements = defensiveCopy(elements),
-        bitVec = {}
+        bitVec = {},
+
+        -- caching for efficiency
+        cachedKey = false,
+        cachedElements = defensiveCopy(elements),
     }, Set_mt)
 
     local bitNumLen = math.floor(#self.indexToElement / 32) + 1
@@ -128,8 +131,28 @@ function Schema:newSet(elements)
 end
 
 
-function Schema:isSubsetOf()
+function Set:isSubsetOf(otherSet)
+    local otherBitVec = otherSet.bitVec
+    for i, n in ipairs(self.bitVec) do
+        local n2 = otherBitVec[i]
+        if bit.band(n, n2) ~= n then
+            return false
+        end
+    end
+    return true
+end
 
+
+
+function Set:equals(otherSet)
+    local otherBitVec = otherSet.bitVec
+    for i, n in ipairs(self.bitVec) do
+        local n2 = otherBitVec[i]
+        if n ~= n2 then
+            return false
+        end
+    end
+    return true
 end
 
 
