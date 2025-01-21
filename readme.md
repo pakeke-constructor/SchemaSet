@@ -56,8 +56,8 @@ local sc_ERR = schema:newSet({
 
 
 
-scSet0:logicalAnd(scSet1) --> scSet{ "zero" }
-scSet0:logicalOr(scSet1) --> scSet{ "zero", "elem2" }
+scSet0:intersect(scSet1) --> scSet{ "zero" }
+scSet0:union(scSet1) --> scSet{ "zero", "elem2" }
 
 scSet0:isSubsetOf(scSet1) --> scSet{ "zero" }
 scSet0:equals(scSet1) --> bool
